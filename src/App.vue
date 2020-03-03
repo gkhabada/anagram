@@ -1,9 +1,8 @@
 <template lang="pug">
-  #app.my-5
-    h1.h4 Игра, в которой из анаграмы перетаскиванием ячеек нужно собрать целое слово
+  #app.my-5.px-5
+    h1.h4.py-3.text-center Игра, в которой из анаграмы перетаскиванием ячеек нужно собрать целое слово
     .content.py-3(v-if="current")
-      img(:src="current.img_src ? current.img_src : require('./assets/placeholder.png')",)
-      // h1.my-5 {{current.name}}
+      img(:src="current.img_src ? current.img_src : require('./assets/placeholder.png')", :alt="current.name")
       draggable(:list="anagram", @end="checkWord").d-flex.flex-wrap.my-5
         div(v-for="letter in anagram").draggable__item {{letter}}
 
