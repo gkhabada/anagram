@@ -1,40 +1,69 @@
 <template lang="pug">
   #app.my-5
-    button(@click="gameStart").btn.btn-primary Начать
     .content.py-3(v-if="current")
       img(:src="current.img_src ? current.img_src : require('./assets/placeholder.png')",)
-      h1.mt-5 {{current.name.toUpperCase()}}
-      p
-        span(v-for="letter in anagram").m-2.text-primary {{letter}}
+      h1.my-5 {{current.name.toUpperCase()}}
+      draggable(:list="anagram", @end="checkWord")
+        span(v-for="letter in anagram").p-2.mx-2.text-white.bg-secondary.h4 {{letter}}
+
+    table.table(v-if="!current")
+      thead
+        tr
+          th(@click="sortTable()", scope="col") #
+          th(@click="sortTable()", scope="col") Слово
+          th(@click="sortTable()", scope="col") Время
+      tbody
+        tr(v-for="res in results")
+          th {{res.num}}
+          td {{res.word}}
+          td {{res.time}}
+
+    .modal(v-if="success")
+      .modal-dialog
+        .modal-content
+          .modal-header
+            h5.modal-title Правильно
+            button.close
+          .modal-body
+            p Вы выйграли! Повторить?
+          .modal-footer
+            button(@click="gameNext()").btn.btn-primary Конечно!
+            button(@click="gameEnd()").btn.btn-secondary Я уже устал.
 
 
 </template>
 
 <script>
-import 'bootstrap/dist/css/bootstrap.min.css'
 import axios from 'axios'
+import draggable from 'vuedraggable'
+import 'bootstrap/dist/css/bootstrap.min.css'
 
 export default {
   name: 'App',
+  components: {
+    draggable,
+  },
   data () {
     return {
-      items: [],
+      results: [],
       current: null,
       startTime: new Date(),
       anagram: [],
+      success: false,
     }
   },
+  mounted () {
+    this.getWord()
+  },
   methods: {
-    gameStart () {
-      this.getWord()
-    },
     getAnagram (word) {
-      this.anagram = [];
+      this.anagram = []
 
       let splitWord = word.split('')
       word.split('').forEach((letter, index) => {
-        let brr = this.getRandom(0, splitWord.length - index)
+        let brr = this.getRandom(0, splitWord.length - index - 1)
         this.anagram.push(splitWord.splice(brr, 1)[0])
+
       })
     },
     getRandom (min, max) {
@@ -65,9 +94,33 @@ export default {
           console.log('error', err)
         })
     },
-    checkResult () {
+    checkWord () {
+      if (this.anagram.join('') === this.current.name) {
 
+        let t = (+new Date - this.startTime) / 1000
+        let m = t / 60 < 10 ? '0' + Math.floor(t / 60) : Math.floor(t / 60)
+        let s = t % 60 < 10 ? '0' + Math.floor(t % 60) : Math.floor(t % 60)
+
+        this.success = true
+        this.results.push({
+          id: this.current.id,
+          num: this.results.length + 1,
+          word: this.current.name,
+          time: `${m} : ${s}`,
+        })
+      }
     },
+    gameNext() {
+      this.getWord();
+      this.success = false
+    },
+    gameEnd () {
+      this.current = null;
+      this.success = false
+    },
+    sortTable () {
+
+    }
   },
 }
 </script>
@@ -94,6 +147,11 @@ export default {
     object-fit: cover;
     object-position: center;
   }
+}
+
+.modal {
+  display: block;
+  background-color: #00000077;
 }
 
 </style>
